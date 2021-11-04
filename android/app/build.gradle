@@ -133,6 +133,7 @@ android {
     defaultConfig {
         applicationId "com.oktasubscribercheck"
         minSdkVersion rootProject.ext.minSdkVersion
+        manifestPlaceholders = [ "appAuthRedirectScheme": "${applicationId}:/callback"]
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"

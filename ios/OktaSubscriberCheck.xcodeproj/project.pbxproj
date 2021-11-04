@@ -104,7 +104,6 @@
 				4DDE784A4A7240994C76C4DC /* Pods-OktaSubscriberCheck-OktaSubscriberCheckTests.debug.xcconfig */,
 				BD06E8ECCA5DBF1E71EE3A23 /* Pods-OktaSubscriberCheck-OktaSubscriberCheckTests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -590,6 +589,7 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=*]" = "com.oktasubscribercheck:/callback";
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -648,6 +648,7 @@
 					"\"$(inherited)\"",
 				);
 				MTL_ENABLE_DEBUG_INFO = NO;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=*]" = "com.oktasubscribercheck:/callback";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
 			};
