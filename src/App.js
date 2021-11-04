@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useLayoutEffect, useState } from 'react'
 
 import {
   ActivityIndicator,
@@ -12,7 +12,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
+import { CLIENT_ID, REDIRECT_URI, LOGOUT_REDIRECT_URI, ISSUER } from '@env'
 
+import { createConfig } from '@okta/okta-react-native'
 const App = () => {
   const baseURL = '<YOUR_LOCAL_TUNNEL_URL>'
   const [email, setEmail] = useState('')
@@ -39,6 +41,28 @@ const App = () => {
 
   const signUpHandler = async () => {}
 
+  useLayoutEffect(() => {
+    const {
+      clientId,
+      redirectUri,
+      endSessionRedirectUri,
+      discoveryUri,
+      scopes,
+    } = {
+      clientId: CLIENT_ID,
+      redirectUri: REDIRECT_URI,
+      endSessionRedirectUri: LOGOUT_REDIRECT_URI,
+      discoveryUri: ISSUER,
+      scopes: ['openid', 'profile', 'offline_access'],
+    }
+    await createConfig({
+      clientId,
+      redirectUri,
+      endSessionRedirectUri,
+      discoveryUri,
+      scopes,
+    })
+  }, [])
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>

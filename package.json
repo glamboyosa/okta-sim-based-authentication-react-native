@@ -10,9 +10,11 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@okta/okta-react-native": "^2.1.2",
     "@tru_id/tru-sdk-react-native": "^0.3.7",
     "react": "17.0.2",
-    "react-native": "0.66.1"
+    "react-native": "0.66.1",
+    "react-native-dotenv": "^3.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
