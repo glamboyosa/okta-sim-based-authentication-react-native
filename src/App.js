@@ -14,7 +14,9 @@ import {
 } from 'react-native'
 import { CLIENT_ID, REDIRECT_URI, LOGOUT_REDIRECT_URI, ISSUER } from '@env'
 
-import { createConfig } from '@okta/okta-react-native'
+import { createConfig, signIn } from '@okta/okta-react-native'
+
+import TruSDK from '@tru_id/tru-sdk-react-native'
 const App = () => {
   const baseURL = '<YOUR_LOCAL_TUNNEL_URL>'
   const [email, setEmail] = useState('')
@@ -39,7 +41,119 @@ const App = () => {
       },
     ])
 
-  const signUpHandler = async () => {}
+  const createSubscriberCheck = async (phoneNumber) => {
+    const body = { phone_number: phoneNumber }
+
+    console.log('tru.ID: Creating PhoneCheck for', body)
+
+    const response = await fetch(`${baseURL}/subscriber-check`, {
+      body: JSON.stringify(body),
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    const json = await response.json()
+
+    return json
+  }
+
+  const getSubscriberCheck = async (checkId) => {
+    const response = await fetch(`${baseURL}/subscriber-check/${checkId}`)
+    const json = await response.json()
+    return json
+  }
+
+  const signUpHandler = async () => {
+    setLoading(true)
+    // check if we have coverage using the `isReachable` function
+
+    const reachabilityDetails = await TruSDK.isReachable()
+
+    console.log('Reachability details are', reachabilityDetails)
+
+    const info = JSON.parse(reachabilityDetails)
+
+    if (info.error.status === 400) {
+      errorHandler({
+        title: 'Something went wrong.',
+        message: 'Mobile Operator not supported',
+      })
+      setLoading(false)
+      return
+    }
+
+    let isSubscriberCheckSupported = false
+
+    if (info.error.status !== 412) {
+      isSubscriberCheckSupported = false
+
+      for (const { product_name } of info.products) {
+        console.log('supported products are', product_name)
+
+        if (product_name === 'Subscriber Check') {
+          isSubscriberCheckSupported = true
+        }
+      }
+    } else {
+      isSubscriberCheckSupported = true
+    }
+
+    if (isSubscriberCheckSupported) {
+      try {
+        const subscriberCheckResponse = await createSubscriberCheck(phoneNumber)
+
+        await TruSDK.check(subscriberCheckResponse.check_url)
+
+        const subscriberCheckResult = await getSubscriberCheck(
+          subscriberCheckResponse.check_id,
+        )
+
+        if (
+          subscriberCheckResult.no_sim_change === false &&
+          subscriberCheckResult.match === false
+        ) {
+          setLoading(false)
+          return errorHandler({
+            title: 'Something went wrong.',
+            message:
+              'We were unable to verify your identity. Please try again.',
+          })
+        } else {
+          // WE HAVE A MATCH AND THE SIM HASN'T CHANGED RECENTLY
+          authResponse = await signIn({ username: email, password })
+
+          if (authResponse.access_token) {
+            setLoading(false)
+            return successHandler()
+          }
+        }
+      } catch (e) {
+        setLoading(false)
+        return errorHandler({
+          title: 'Something went wrong',
+          message: e.message,
+        })
+      }
+    } else {
+      // MNO does not support SubscriberCheck so proceed with Okta sign in
+      try {
+        authResponse = await signIn({ username: email, password })
+
+        if (authResponse.access_token) {
+          setLoading(false)
+          return successHandler()
+        }
+      } catch (e) {
+        setLoading(false)
+        return errorHandler({
+          title: 'Something went wrong',
+          message: e.message,
+        })
+      }
+    }
+  }
 
   useLayoutEffect(() => {
     const {
